@@ -187,14 +187,22 @@ export default function ApiConsolePage() {
 
   const handleImport = async () => {
     if (!importForm.file) return showNotification("파일을 선택해주세요.", "error");
+    
+    // 1. 확장자 검증 (.xlsx 전용)
+    if (!importForm.file.name.endsWith(".xlsx")) {
+        return showNotification(".xlsx 형식의 엑셀 파일만 업로드 가능합니다.", "error");
+    }
+
     setIsImporting(true);
     setImportResult(null);
     try {
         const formData = new FormData();
-        // 명세 준수: quarterKey (int), file (파일)
+        // 2. 필드 순서 조정 (일반 필드 우선)
         formData.append("quarterKey", importForm.quarterKey);
-        formData.append("file", importForm.file);
+        // 3. 파일명 명시적 전달 (UNKNOWN 타입 방지)
+        formData.append("file", importForm.file, importForm.file.name);
         
+        addLog(`Importing: ${importForm.file.name} for ${importForm.quarterKey}...`);
         const res = await adminService.importMetrics(formData);
         setImportResult(res);
         addLog({ event: "Excel Import Success", data: res });
