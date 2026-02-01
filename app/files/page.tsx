@@ -75,37 +75,33 @@ export default function FileConsolePage() {
     }
   };
 
-  // 4. 파일 다운로드/보기용 Blob 페치 (Template fetchFileBlob 로직)
-  const fetchFileBlob = async (fileId: number) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/files/${fileId}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: File fetch failed`);
-    return res.blob();
+  // 4. [고도화] fetch 대신 브라우저 네이티브 다운로드 사용 (CORS 원천 차단)
+  // 분석 내용에 따라 fetch() + res.blob() 로직을 제거하고 직접 이동 방식을 채택합니다.
+  
+  const handleView = (fileId: number) => {
+    if (!accessToken) return addLog("로그인이 필요합니다.");
+    
+    // 백엔드 엔드포인트로 직접 브라우저 이동 (CORS 영향 없음)
+    // 인증을 위해 토큰을 쿼리 스트링으로 전달하는 방식을 권장합니다.
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    window.open(url, "_blank");
+    addLog(`Viewing file ${fileId} via native browser redirect...`);
   };
 
-  const handleView = async (fileId: number) => {
-    try {
-        const blob = await fetchFileBlob(fileId);
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch (err: any) { addLog(`View Error: ${err.message}`); }
-  };
-
-  const handleDownload = async (fileId: number, filename: string) => {
-    try {
-        const blob = await fetchFileBlob(fileId);
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch (err: any) { addLog(`Download Error: ${err.message}`); }
+  const handleDownload = (fileId: number, filename: string) => {
+    if (!accessToken) return addLog("로그인이 필요합니다.");
+    
+    // 직접 다운로드 링크 생성
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    
+    // 가상 <a> 태그를 통한 다운로드 유도
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    addLog(`Downloading ${filename} via native browser link...`);
   };
 
   return (

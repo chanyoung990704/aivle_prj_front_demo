@@ -184,7 +184,7 @@ export default function DiscussionPage() {
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-10 h-10 rounded-full bg-paper flex items-center justify-center text-accent"><User size={20}/></div>
                                 <div>
-                                    <p className="text-sm font-bold text-ink">Author ID: {selectedPost.userId.slice(0, 8)}...</p>
+                                    <p className="text-sm font-bold text-ink">Author ID: {String(selectedPost.userId).slice(0, 8)}...</p>
                                     <div className="flex items-center gap-2 text-[10px] text-ink-muted">
                                         <Clock size={12} /> {new Date(selectedPost.createdAt).toLocaleString()}
                                         <span>•</span>
@@ -218,7 +218,7 @@ export default function DiscussionPage() {
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-ink">User {comment.userId.slice(0,6)}</span>
+                                        <span className="text-xs font-bold text-ink">User {String(comment.userId).slice(0, 6)}</span>
                                         <span className="text-[10px] text-ink-muted font-mono">{new Date(comment.createdAt).toLocaleTimeString()}</span>
                                     </div>
                                     <button 
