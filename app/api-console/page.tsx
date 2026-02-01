@@ -5,7 +5,7 @@ import { postService } from "@/services/postService";
 import { adminService } from "@/services/adminService";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, Plus, Trash2, Edit, Search, Send, FileUp, Building2, CheckCircle2, BarChart3, MessageSquare, FileText, Lock } from "lucide-react";
+import { RefreshCw, Plus, Trash2, Edit, Search, Send, FileUp, Building2, CheckCircle2, BarChart3, MessageSquare, FileText, Lock, Loader2, Info } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import PredictChart from "@/components/features/dashboard/PredictChart";
 import { useAuth } from "@/context/AuthContext";
@@ -48,12 +48,11 @@ export default function ApiConsolePage() {
   const [companySearch, setCompanySearch] = useState("");
   const [companyResults, setCompanyResults] = useState<any[]>([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  // --- Initial Load ---
-  useEffect(() => {
-    loadCategories();
-    fetchPosts();
-  }, []);
+  
+  // 5. Excel Import States (명세 기반)
+  const [importForm, setImportForm] = useState({ quarterKey: "20253", file: null as File | null });
+  const [importResult, setImportResult] = useState<any>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
     setNotification({ message, type });
@@ -184,6 +183,27 @@ export default function ApiConsolePage() {
       showNotification("Published successfully!");
       setIsPreviewOpen(true);
     } catch (e: any) { showNotification(e.message, "error"); }
+  };
+
+  const handleImport = async () => {
+    if (!importForm.file) return showNotification("파일을 선택해주세요.", "error");
+    setIsImporting(true);
+    setImportResult(null);
+    try {
+        const formData = new FormData();
+        formData.append("quarterKey", importForm.quarterKey);
+        formData.append("file", importForm.file);
+        
+        const res = await adminService.importMetrics(formData);
+        setImportResult(res);
+        addLog({ event: "Excel Import Success", data: res });
+        showNotification("엑셀 업로드가 완료되었습니다!");
+    } catch (e: any) {
+        showNotification(e.message, "error");
+        addLog({ error: "Import Failed", details: e.message });
+    } finally {
+        setIsImporting(false);
+    }
   };
 
   return (
@@ -324,33 +344,75 @@ export default function ApiConsolePage() {
 
             {activeTab === "admin" && (
                 <div className="space-y-6">
+                    {/* 엑셀 벌크 임포트 (P1 명세 기반) */}
                     <Card>
-                        <CardHeader><h2 className="font-serif text-xl flex items-center gap-2"><Building2 size={20} className="text-accent-secondary"/> Entity Search</h2></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="relative">
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-3 text-ink-muted" size={18} />
-                                        <input placeholder="Search company (Debounced)" value={companySearch} onChange={e => setCompanySearch(e.target.value)} className="w-full pl-10 p-3 bg-paper rounded-xl border border-line outline-none" />
-                                    </div>
-                                    <Button variant="outline" onClick={() => adminService.syncDart().then(addLog)}><RefreshCw size={16}/> Sync DART</Button>
+                        <CardHeader>
+                            <h2 className="font-serif text-xl flex items-center gap-2"><FileUp size={20} className="text-accent-tertiary"/> 엑셀 지표 벌크 임포트</h2>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-start gap-3">
+                                <Info size={16} className="text-blue-500 mt-0.5 shrink-0" />
+                                <div className="text-[11px] text-blue-700 leading-relaxed">
+                                    <p className="font-bold mb-1">엑셀 형식 안내:</p>
+                                    시트명 "in", 헤더: 기업코드, 기업명, 지표명_현재, 지표명_분기-1...
                                 </div>
-                                {companyResults.length > 0 && (
-                                    <div className="absolute w-full mt-2 bg-white border border-line rounded-2xl shadow-soft z-50 max-h-[200px] overflow-auto">
-                                        {companyResults.map((c, idx) => (
-                                            <div key={`${c.stockCode || 'no-code'}-${idx}`} onClick={() => {setPublishForm({...publishForm, stockCode: c.stockCode || "", corpName: c.corpName}); setCompanySearch(""); setCompanyResults([]);}} className="p-4 hover:bg-paper cursor-pointer flex justify-between border-b border-line last:border-none">
-                                                <span className="font-bold">{c.corpName}</span><span className="text-xs text-accent-secondary font-mono">{c.stockCode || "N/A"}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
-                            {publishForm.stockCode && <div className="p-4 bg-accent-tertiary/10 border border-accent-tertiary/20 rounded-2xl flex items-center justify-between">
-                                <div className="flex items-center gap-3"><CheckCircle2 className="text-accent-tertiary" size={20} /><div><div className="text-[10px] text-ink-muted font-bold uppercase">Target Entity</div><div className="font-bold">{publishForm.corpName} ({publishForm.stockCode})</div></div></div>
-                                <button onClick={() => setPublishForm({...publishForm, stockCode: ""})} className="text-xs text-red-500 font-bold">Cancel</button>
-                            </div>}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-ink-muted uppercase">기준 분기 (quarterKey)</label>
+                                    <input 
+                                        type="number" 
+                                        value={importForm.quarterKey}
+                                        onChange={e => setImportForm({...importForm, quarterKey: e.target.value})}
+                                        className="w-full p-3 bg-paper rounded-xl border border-line outline-none" 
+                                        placeholder="20253"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-ink-muted uppercase">엑셀 파일 (.xlsx)</label>
+                                    <input 
+                                        type="file" 
+                                        accept=".xlsx"
+                                        onChange={e => setImportForm({...importForm, file: e.target.files?.[0] || null})}
+                                        className="w-full text-xs file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-accent-tertiary file:text-white" 
+                                    />
+                                </div>
+                            </div>
+
+                            <Button onClick={handleImport} disabled={isImporting || !importForm.file} className="w-full bg-accent-tertiary hover:bg-emerald-600">
+                                {isImporting ? <Loader2 className="animate-spin" size={18}/> : <FileUp size={18}/>}
+                                {isImporting ? "데이터 분석 및 저장 중..." : "엑셀 임포트 실행"}
+                            </Button>
+
+                            {/* 임포트 결과 대시보드 */}
+                            {importResult && (
+                                <div className="pt-4 border-t border-line animate-in zoom-in-95 duration-300">
+                                    <h3 className="text-sm font-bold text-ink mb-3 flex items-center gap-2"><CheckCircle2 size={16} className="text-accent-tertiary"/> 임포트 결과 요약</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <div className="bg-paper p-3 rounded-xl text-center">
+                                            <div className="text-[10px] text-ink-muted font-bold uppercase">Total</div>
+                                            <div className="text-lg font-serif font-bold text-ink">{importResult.totalCommands}</div>
+                                        </div>
+                                        <div className="bg-emerald-50 p-3 rounded-xl text-center border border-emerald-100">
+                                            <div className="text-[10px] text-emerald-600 font-bold uppercase">Saved</div>
+                                            <div className="text-lg font-serif font-bold text-emerald-700">{importResult.savedValues}</div>
+                                        </div>
+                                        <div className="bg-orange-50 p-3 rounded-xl text-center border border-orange-100">
+                                            <div className="text-[10px] text-orange-600 font-bold uppercase">Skip Corp</div>
+                                            <div className="text-lg font-serif font-bold text-orange-700">{importResult.skippedCompanies}</div>
+                                        </div>
+                                        <div className="bg-red-50 p-3 rounded-xl text-center border border-red-100">
+                                            <div className="text-[10px] text-red-600 font-bold uppercase">Skip Metric</div>
+                                            <div className="text-lg font-serif font-bold text-red-700">{importResult.skippedMetrics}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
+
+                    {/* 기존 기업 검색 및 리포트 발행 섹션 유지 */}
                     <Card>
                         <CardHeader><h2 className="font-serif text-xl flex items-center gap-2"><Send size={20} className="text-accent"/> Report Publish</h2></CardHeader>
                         <CardContent className="space-y-6">

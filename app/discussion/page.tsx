@@ -107,16 +107,45 @@ export default function DiscussionPage() {
     } catch (e: any) { alert(e.message); }
   };
 
-  const handleFileView = (fileId: number) => {
+  const handleFileView = async (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=inline`;
-    window.open(url, "_blank");
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (!res.ok) throw new Error("Authentication failed or file not found");
+        
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err: any) {
+        console.error(err);
+        alert("파일을 열 수 없습니다. (CORS 설정 또는 인증 문제)");
+    }
   };
 
-  const handleFileDownload = (fileId: number) => {
+  const handleFileDownload = async (fileId: number, filename: string) => {
     if (!accessToken) return alert("Please sign in first.");
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=attachment`;
-    window.location.href = url;
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (!res.ok) throw new Error("Download failed");
+        
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err: any) {
+        console.error(err);
+        alert("다운로드에 실패했습니다.");
+    }
   };
 
   return (
@@ -250,7 +279,7 @@ export default function DiscussionPage() {
                                                     <Eye size={16} />
                                                 </button>
                                                 <button 
-                                                    onClick={() => handleFileDownload(file.id)}
+                                                    onClick={() => handleFileDownload(file.id, file.originalFilename)}
                                                     className="p-2 hover:bg-white rounded-full text-accent transition-colors"
                                                     title="Download file"
                                                 >
