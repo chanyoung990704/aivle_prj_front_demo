@@ -96,8 +96,12 @@ export default function AuthPage() {
 
     try {
       const res = await authService.login(payload);
-      login(res.accessToken);
-      setLog(`Login Success!\nAccess: ${res.accessToken.slice(0, 20)}...`);
+      // login 함수는 accessToken과 user 객체를 모두 요구함
+      // 백엔드 응답(res)에 user 정보가 포함되어 있다고 가정
+      login(res.accessToken, res.user || { id: 0, name: "Unknown", email: payload.email, role: "ROLE_USER" });
+      
+      setLog(`Welcome back!`);
+      showNotification(`Login Success!`);
       setPendingUserId(null);
     } catch (err: any) {
       setLog(`Login Failed: ${err.message}`);
