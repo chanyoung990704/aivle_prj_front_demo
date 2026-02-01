@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Script from "next/script";
 import { cn } from "@/lib/utils/cn";
+import { Mail } from "lucide-react";
 
 declare global {
   interface Window {
