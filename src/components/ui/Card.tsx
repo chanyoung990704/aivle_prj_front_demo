@@ -9,7 +9,8 @@ export function Card({ children, className, ...props }: CardProps) {
   return (
     <div 
       className={cn(
-        "bg-white rounded-3xl border border-line shadow-card hover:shadow-soft transition-all duration-300",
+        "bg-paper border border-paper-border rounded-3xl shadow-card backdrop-blur-sm",
+        "hover:border-paper-light hover:shadow-soft transition-all duration-300",
         className
       )} 
       {...props}
@@ -20,9 +21,9 @@ export function Card({ children, className, ...props }: CardProps) {
 }
 
 export function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("p-6 pb-0", className)}>{children}</div>;
+  return <div className={cn("p-6 pb-0 border-b border-paper-border mb-4", className)}>{children}</div>;
 }
 
 export function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("p-6", className)}>{children}</div>;
+  return <div className={cn("p-6 pt-0", className)}>{children}</div>;
 }

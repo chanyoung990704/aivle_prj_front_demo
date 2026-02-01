@@ -75,23 +75,39 @@ export default function FileConsolePage() {
     }
   };
 
-  // 4. [고도화] fetch 대신 브라우저 네이티브 다운로드 사용 (CORS 원천 차단)
-  // 분석 내용에 따라 fetch() + res.blob() 로직을 제거하고 직접 이동 방식을 채택합니다.
-  
-  const handleView = (fileId: number) => {
-    if (!accessToken) return addLog("로그인이 필요합니다.");
-    // 방법 A: 직접 이동 (CORS 영향 없음)
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
-    window.open(url, "_blank");
-    addLog(`Redirecting browser to file ${fileId}...`);
+  // 4. Presigned URL 획득 및 핸들링 (Updated Logic)
+  const getPresignedUrl = async (fileId: number) => {
+    const res = await sentinelFetch<any>(`/files/${fileId}/url`);
+    if (!res.success || !res.data?.url) {
+        throw new Error("파일 URL을 가져오는데 실패했습니다.");
+    }
+    return res.data.url;
   };
 
-  const handleDownload = (fileId: number) => {
-    if (!accessToken) return addLog("로그인이 필요합니다.");
-    // 방법 A: 직접 다운로드 (CORS 영향 없음)
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
-    window.location.href = url;
-    addLog(`Initiating native download for file ${fileId}...`);
+  const handleView = async (fileId: number) => {
+    try {
+        const url = await getPresignedUrl(fileId);
+        addLog(`View URL Acquired: ${url.slice(0, 50)}...`);
+        // Presigned URL은 인증 없이 접근 가능하므로 새 창으로 바로 오픈
+        window.open(url, "_blank");
+    } catch (err: any) { addLog(`View Error: ${err.message}`); }
+  };
+
+  const handleDownload = async (fileId: number, filename: string) => {
+    try {
+        const url = await getPresignedUrl(fileId);
+        addLog(`Download URL Acquired: ${url.slice(0, 50)}...`);
+        
+        // S3 Presigned URL을 사용하여 파일 다운로드
+        // 브라우저가 다른 도메인(S3)에서의 다운로드를 차단하지 않도록 가상 링크 생성
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename; // S3 설정에 따라 이 속성이 무시될 수 있음
+        link.target = "_blank";   // 일부 브라우저 호환성을 위해
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (err: any) { addLog(`Download Error: ${err.message}`); }
   };
 
   return (

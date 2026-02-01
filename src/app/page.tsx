@@ -121,13 +121,13 @@ export default function Home() {
                   placeholder="기업명 입력 (예: 동화, 삼성...)" 
                   value={companySearch}
                   onChange={e => setCompanySearch(e.target.value)}
-                  className="w-full pl-10 p-3 bg-paper rounded-xl border border-line outline-none focus:border-accent-secondary transition-all"
+                  className="w-full pl-10 p-3 bg-paper rounded-xl border border-paper-border text-ink placeholder:text-ink-muted outline-none focus:border-accent transition-all"
                 />
                 {searchLoading && <Loader2 className="absolute right-3 top-3 animate-spin text-accent" size={18} />}
               </div>
               
               {companyResults.length > 0 && (
-                <div className="absolute w-full mt-2 bg-white border border-line rounded-2xl shadow-soft z-50 max-h-[250px] overflow-auto animate-in fade-in duration-200">
+                <div className="absolute w-full mt-2 bg-paper border border-paper-border rounded-2xl shadow-soft z-50 max-h-[250px] overflow-auto animate-in fade-in duration-200">
                   {companyResults.map((c, idx) => (
                     <div 
                       key={`${c.stockCode}-${idx}`}
@@ -137,7 +137,7 @@ export default function Home() {
                         setCompanySearch("");
                         setCompanyResults([]);
                       }}
-                      className="p-4 hover:bg-paper cursor-pointer flex justify-between border-b border-line last:border-none"
+                      className="p-4 hover:bg-paper-light cursor-pointer flex justify-between border-b border-paper-border last:border-none"
                     >
                       <span className="font-bold text-ink">{c.corpName}</span>
                       <span className="text-xs text-accent-secondary font-mono bg-accent-secondary/10 px-2 py-1 rounded-md">{c.stockCode}</span>
@@ -151,11 +151,11 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-ink-muted uppercase">From</label>
-                <input type="number" value={fromQuarter} onChange={e => setFromQuarter(e.target.value)} className="w-full p-2.5 bg-paper rounded-xl border border-line text-sm outline-none" />
+                <input type="number" value={fromQuarter} onChange={e => setFromQuarter(e.target.value)} className="w-full p-2.5 bg-paper rounded-xl border border-paper-border text-ink text-sm outline-none focus:border-accent" />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-ink-muted uppercase">To</label>
-                <input type="number" value={toQuarter} onChange={e => setToQuarter(e.target.value)} className="w-full p-2.5 bg-paper rounded-xl border border-line text-sm outline-none" />
+                <input type="number" value={toQuarter} onChange={e => setToQuarter(e.target.value)} className="w-full p-2.5 bg-paper rounded-xl border border-paper-border text-ink text-sm outline-none focus:border-accent" />
               </div>
             </div>
 

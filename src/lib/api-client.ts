@@ -1,10 +1,12 @@
 // 3. Integration & Auth Helper
 
+import { ENV } from "@/config/env";
+
 interface FetchOptions extends RequestInit {
     headers?: Record<string, string>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = ENV.API_URL;
 
 /**
  * SENTINEL Fetch Wrapper

@@ -2,49 +2,54 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
     content: [
-        "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-        "./components/**/*.{js,ts,jsx,tsx,mdx}",
-        "./app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
     ],
     theme: {
         extend: {
             colors: {
-                // Premium Paper Concept Palette
+                // Dark Theme Palette
+                background: "#0f1115", // Main Background (Deep Charcoal)
                 paper: {
-                    DEFAULT: "#f6f1ea",
-                    light: "#fffdfa",
+                    DEFAULT: "#181b21", // Secondary BG (Card)
+                    light: "#22262e",   // Hover State
+                    border: "#2a2e37",  // Border Color
                 },
                 ink: {
-                    DEFAULT: "#121417",
-                    soft: "#2b2f3a",
-                    muted: "#6b7280",
+                    DEFAULT: "#ededed", // Primary Text (Off-white)
+                    soft: "#a1a1aa",    // Secondary Text (Light Gray)
+                    muted: "#52525b",   // Muted Text (Dark Gray)
                 },
                 accent: {
-                    DEFAULT: "#ff6b3d", // Orange (Primary)
-                    hover: "#e55a2b",
-                    secondary: "#3d7bff", // Blue (Secondary)
-                    tertiary: "#13b886", // Green (Success/Growth)
+                    DEFAULT: "#ff6b3d", // Signature Orange
+                    hover: "#ff8f66",
+                    secondary: "#3d7bff", // Electric Blue
+                    tertiary: "#10b981",  // Neon Green
+                    glow: "rgba(255, 107, 61, 0.15)", // Orange Glow
                 },
-                line: "#e6dfd5",
+                line: "#2a2e37", // Separator Line
             },
             fontFamily: {
-                serif: ["var(--font-newsreader)", "serif"], // Headings
-                sans: ["var(--font-space-grotesk)", "sans-serif"], // Body/UI
+                serif: ["var(--font-newsreader)", "serif"],
+                sans: ["var(--font-space-grotesk)", "sans-serif"],
             },
             borderRadius: {
                 xl: "12px",
                 "2xl": "16px",
-                "3xl": "20px", // SENTINEL Signature Radius
+                "3xl": "24px",
             },
             boxShadow: {
-                soft: "0 20px 50px rgba(18, 20, 23, 0.14)",
-                card: "0 4px 20px rgba(18, 20, 23, 0.06)",
+                soft: "0 10px 40px -10px rgba(0,0,0,0.5)",
+                card: "0 0 0 1px #2a2e37, 0 4px 12px rgba(0,0,0,0.3)",
+                glow: "0 0 20px var(--accent-glow)",
             },
             backgroundImage: {
-                "paper-gradient": `
-          radial-gradient(circle at 20% 20%, #fff1df 0%, transparent 55%),
-          radial-gradient(circle at 80% 0%, #e7efff 0%, transparent 52%),
-          linear-gradient(180deg, #f8f3ea 0%, #efe8dd 100%)
+                "dark-gradient": `
+          radial-gradient(circle at 15% 15%, rgba(61, 123, 255, 0.08) 0%, transparent 40%),
+          radial-gradient(circle at 85% 85%, rgba(255, 107, 61, 0.08) 0%, transparent 40%),
+          linear-gradient(180deg, #0f1115 0%, #0a0b0d 100%)
         `,
             },
         },
