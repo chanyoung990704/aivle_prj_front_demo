@@ -25,5 +25,13 @@ export const authService = {
 
   getClaims: async () => {
     return sentinelFetch<any>("/auth/console/claims");
+  },
+
+  verifyEmail: async (token: string) => {
+    return sentinelFetch<string>(`/auth/verify-email?token=${token}`, { method: "GET" });
+  },
+
+  resendVerification: async (userId: number) => {
+    return sentinelFetch<string>(`/auth/resend-verification?userId=${userId}`, { method: "GET" });
   }
 };

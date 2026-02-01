@@ -23,6 +23,10 @@ export default function AuthPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [isTurnstileValid, setIsTurnstileValid] = useState(false);
   const [widgetId, setWidgetId] = useState<string | null>(null);
+  
+  // Email Verification States
+  const [pendingUserId, setPendingUserId] = useState<number | null>(null);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   // 1. Turnstile 수동 렌더링 함수
   const renderTurnstile = () => {
@@ -85,8 +89,14 @@ export default function AuthPage() {
       const res = await authService.login(payload);
       login(res.accessToken);
       setLog(`Login Success!\nAccess: ${res.accessToken.slice(0, 20)}...`);
+      setPendingUserId(null);
     } catch (err: any) {
       setLog(`Login Failed: ${err.message}`);
+      // 인증 필요 에러 처리
+      if (err.message.includes("EMAIL_VERIFICATION_REQUIRED") || err.message.includes("인증이 필요합니다")) {
+        showNotification("이메일 인증이 필요합니다.", "error");
+        // 실제 API에서 userId를 에러 바디에 담아준다고 가정하거나, 이메일로 다시 찾기 유도
+      }
     }
   };
 
@@ -105,10 +115,30 @@ export default function AuthPage() {
 
     try {
       const res = await authService.signup(payload);
-      setLog(`Signup Success! Please login.`);
-      setActiveTab("login");
+      setLog(`Signup Success! Status: ${res.status}`);
+      
+      if (res.status === "PENDING") {
+        setPendingUserId(res.id);
+        setVerificationSent(true);
+        showNotification("인증 이메일이 발송되었습니다.", "success");
+      } else {
+        showNotification("회원가입 완료! 로그인 해주세요.");
+        setActiveTab("login");
+      }
     } catch (err: any) {
       setLog(`Signup Failed: ${err.message}`);
+      showNotification(err.message, "error");
+    }
+  };
+
+  const handleResend = async () => {
+    if (!pendingUserId) return;
+    try {
+        const res = await authService.resendVerification(pendingUserId);
+        showNotification("인증 메일을 재발송했습니다.");
+        setLog(res);
+    } catch (err: any) {
+        showNotification(err.message, "error");
     }
   };
 
@@ -160,7 +190,22 @@ export default function AuthPage() {
 
           <Card>
             <CardContent>
-              {activeTab === "login" ? (
+              {verificationSent ? (
+                <div className="text-center py-8 space-y-4 animate-in zoom-in duration-300">
+                    <div className="mx-auto w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+                        <Mail className="text-accent" size={32} />
+                    </div>
+                    <h3 className="text-xl font-serif font-medium">이메일을 확인해 주세요!</h3>
+                    <p className="text-sm text-ink-soft leading-relaxed">
+                        입력하신 이메일로 인증 링크를 보냈습니다.<br/>
+                        인증 완료 후 로그인이 가능합니다.
+                    </p>
+                    <div className="pt-4 space-y-2">
+                        <Button onClick={handleResend} variant="outline" className="w-full text-xs">인증 메일 다시 받기</Button>
+                        <button onClick={() => setVerificationSent(false)} className="text-xs text-ink-muted hover:underline">가입 화면으로 돌아가기</button>
+                    </div>
+                </div>
+              ) : activeTab === "login" ? (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-ink-muted uppercase">Email</label>
