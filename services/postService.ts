@@ -1,34 +1,68 @@
 import { sentinelFetch } from "@/lib/api-client";
+import { ApiResponse, PageResponse, PostResponse, CommentResponse } from "@/types/api";
 
 export const postService = {
-    // 카테고리
-    getCategories: () => sentinelFetch<any>("/dev/categories"),
+  // Categories
+  getCategories: async (): Promise<any[]> => {
+    const res = await sentinelFetch<ApiResponse<any[]>>("/dev/categories");
+    return res.data;
+  },
 
-    // 게시글
-    getPosts: (params: any) => {
-        const query = new URLSearchParams(params).toString();
-        return sentinelFetch<any>(`/posts?${query}`);
-    },
-    getPost: (id: number) => sentinelFetch<any>(`/posts/${id}`),
-    createPost: (payload: any) => sentinelFetch("/posts", {
-        method: "POST",
-        body: JSON.stringify(payload),
-    }),
-    updatePost: (id: number, payload: any) => sentinelFetch(`/posts/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-    }),
-    deletePost: (id: number) => sentinelFetch(`/posts/${id}`, { method: "DELETE" }),
+  // Posts
+  getPosts: async (params: any): Promise<PageResponse<PostResponse>> => {
+    const query = new URLSearchParams(params).toString();
+    const res = await sentinelFetch<ApiResponse<PageResponse<PostResponse>>>(`/posts?${query}`);
+    return res.data;
+  },
 
-    // 댓글
-    getComments: (postId: number) => sentinelFetch<any>(`/posts/${postId}/comments`),
-    createComment: (postId: number, payload: any) => sentinelFetch(`/posts/${postId}/comments`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-    }),
-    updateComment: (id: number, payload: any) => sentinelFetch(`/comments/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-    }),
-    deleteComment: (id: number) => sentinelFetch(`/comments/${id}`, { method: "DELETE" }),
+  getPost: async (id: number): Promise<PostResponse> => {
+    const res = await sentinelFetch<ApiResponse<PostResponse>>(`/posts/${id}`);
+    return res.data;
+  },
+
+  createPost: async (payload: any): Promise<PostResponse> => {
+    const res = await sentinelFetch<ApiResponse<PostResponse>>("/posts", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return res.data;
+  },
+
+  updatePost: async (id: number, payload: any): Promise<PostResponse> => {
+    const res = await sentinelFetch<ApiResponse<PostResponse>>(`/posts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    return res.data;
+  },
+
+  deletePost: async (id: number): Promise<void> => {
+    await sentinelFetch<ApiResponse<void>>(`/posts/${id}`, { method: "DELETE" });
+  },
+
+  // Comments
+  getComments: async (postId: number): Promise<CommentResponse[]> => {
+    const res = await sentinelFetch<ApiResponse<CommentResponse[]>>(`/posts/${postId}/comments`);
+    return res.data;
+  },
+
+  createComment: async (postId: number, payload: any): Promise<CommentResponse> => {
+    const res = await sentinelFetch<ApiResponse<CommentResponse>>(`/posts/${postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return res.data;
+  },
+
+  updateComment: async (id: number, payload: any): Promise<CommentResponse> => {
+    const res = await sentinelFetch<ApiResponse<CommentResponse>>(`/comments/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    return res.data;
+  },
+
+  deleteComment: async (id: number): Promise<void> => {
+    await sentinelFetch<ApiResponse<void>>(`/comments/${id}`, { method: "DELETE" });
+  }
 };

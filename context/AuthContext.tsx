@@ -2,13 +2,16 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+import { UserSummaryDto } from "@/types/api";
+
 interface AuthState {
   accessToken: string;
   isAuthenticated: boolean;
+  user: UserSummaryDto | null;
 }
 
 interface AuthContextType extends AuthState {
-  login: (accessToken: string) => void;
+  login: (accessToken: string, user: UserSummaryDto) => void;
   logout: () => void;
   getToken: () => string | null;
 }
@@ -21,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     accessToken: "",
     isAuthenticated: false,
+    user: null,
   });
 
   useEffect(() => {
@@ -32,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setState({
             accessToken: data.accessToken,
             isAuthenticated: true,
+            user: data.user || null,
           });
         }
       } catch (e) {
@@ -40,14 +45,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = (accessToken: string) => {
-    const newState = { accessToken, isAuthenticated: true };
+  const login = (accessToken: string, user: UserSummaryDto) => {
+    const newState = { accessToken, isAuthenticated: true, user };
     setState(newState);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
   };
 
   const logout = () => {
-    setState({ accessToken: "", isAuthenticated: false });
+    setState({ accessToken: "", isAuthenticated: false, user: null });
     localStorage.removeItem(STORAGE_KEY);
   };
 

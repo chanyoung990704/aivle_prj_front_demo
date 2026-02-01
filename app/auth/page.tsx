@@ -95,8 +95,9 @@ export default function AuthPage() {
 
     try {
       const res = await authService.login(payload);
-      login(res.accessToken);
-      setLog(`Login Success!\nAccess: ${res.accessToken.slice(0, 20)}...`);
+      login(res.accessToken, res.user);
+      setLog(`Welcome back, ${res.user.name}!`);
+      showNotification(`Login Success! Welcome ${res.user.name}`);
       setPendingUserId(null);
     } catch (err: any) {
       setLog(`Login Failed: ${err.message}`);
@@ -167,6 +168,16 @@ export default function AuthPage() {
     } catch (err: any) {
         setLog(`Get Claims Failed: ${err.message}`);
     }
+  };
+
+  const [pwForm, setPwForm] = useState({ current: "", next: "" });
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+        await authService.changePassword({ currentPassword: pwForm.current, newPassword: pwForm.next });
+        showNotification("Password changed successfully!");
+        setPwForm({ current: "", next: "" });
+    } catch (err: any) { showNotification(err.message, "error"); }
   };
 
   return (
@@ -312,6 +323,31 @@ export default function AuthPage() {
         </div>
 
         <div className="space-y-6">
+          {accessToken && (
+            <Card className="border-accent/20">
+                <CardContent>
+                    <h3 className="font-serif text-xl mb-4">Security</h3>
+                    <form onSubmit={handleChangePassword} className="space-y-3">
+                        <input 
+                            type="password" 
+                            placeholder="Current Password" 
+                            value={pwForm.current}
+                            onChange={e => setPwForm({...pwForm, current: e.target.value})}
+                            className="w-full p-3 bg-paper rounded-xl border border-line text-sm outline-none" 
+                        />
+                        <input 
+                            type="password" 
+                            placeholder="New Password" 
+                            value={pwForm.next}
+                            onChange={e => setPwForm({...pwForm, next: e.target.value})}
+                            className="w-full p-3 bg-paper rounded-xl border border-line text-sm outline-none" 
+                        />
+                        <Button type="submit" variant="secondary" size="sm" className="w-full">Update Password</Button>
+                    </form>
+                </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardContent>
               <h3 className="font-serif text-xl mb-4">Token Status</h3>

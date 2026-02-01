@@ -32,7 +32,7 @@ export default function Home() {
     const timer = setTimeout(async () => {
       try {
         const res = await adminService.searchCompanies(companySearch);
-        setCompanyResults(res.data || []);
+        setCompanyResults(res || []);
       } catch (e) {
         console.error("Company search error:", e);
       } finally {
@@ -49,7 +49,7 @@ export default function Home() {
     setLoading(true);
     try {
       const res = await adminService.getGroupedMetrics(stockCode, Number(fromQuarter), Number(toQuarter));
-      setGroupedData(res.data || res);
+      setGroupedData(res);
     } catch (e: any) {
       alert(`조회 실패: ${e.message}`);
     } finally {

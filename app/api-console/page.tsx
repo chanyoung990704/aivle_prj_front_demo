@@ -5,14 +5,20 @@ import { postService } from "@/services/postService";
 import { adminService } from "@/services/adminService";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, Plus, Trash2, Edit, Search, Send, FileUp, Building2, CheckCircle2, BarChart3, MessageSquare, FileText } from "lucide-react";
+import { RefreshCw, Plus, Trash2, Edit, Search, Send, FileUp, Building2, CheckCircle2, BarChart3, MessageSquare, FileText, Lock } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import PredictChart from "@/components/features/dashboard/PredictChart";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ApiConsolePage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ROLE_ADMIN";
+  
   const [activeTab, setActiveTab] = useState("posts");
   const [logs, setLogs] = useState<any[]>([]);
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const availableTabs = isAdmin ? ["posts", "comments", "admin"] : ["posts", "comments"];
 
   // --- 1. Common States ---
   const [categories, setCategories] = useState<any[]>([]);
@@ -58,7 +64,7 @@ export default function ApiConsolePage() {
     const timer = setTimeout(async () => {
       try {
         const res = await adminService.searchCompanies(companySearch);
-        setCompanyResults(res.data || []);
+        setCompanyResults(res || []);
       } catch (e) { console.error(e); }
     }, 300);
     return () => clearTimeout(timer);
@@ -77,14 +83,14 @@ export default function ApiConsolePage() {
   const loadCategories = async () => {
     try {
       const res = await postService.getCategories();
-      setCategories(res.data || []);
+      setCategories(res || []);
     } catch (e: any) { showNotification(`Categories Error: ${e.message}`, "error"); }
   };
 
   const fetchPosts = async () => {
     try {
       const res = await postService.getPosts({ page: 1, size: 10 });
-      const content = res.data?.content || res.content || [];
+      const content = res.content || [];
       setPosts(content);
       if (content.length > 0) setLastPostId(content[0].id.toString());
       addLog({ event: "Fetch Posts", count: content.length });
@@ -131,13 +137,14 @@ export default function ApiConsolePage() {
   const fetchComments = async () => {
     const targetId = commentPostId || lastPostId;
     if (!targetId) return showNotification("Enter Post ID", "error");
-    try {
-      const res = await postService.getComments(Number(targetId));
-      const data = res.data || res || [];
-      setComments(data);
-      if (data.length > 0) setLastCommentId(data[0].id.toString());
-      showNotification(`Loaded ${data.length} comments`);
-    } catch (e: any) { showNotification(e.message, "error"); }
+        try {
+          const res = await postService.getComments(Number(targetId));
+          const data = res || [];
+          setComments(data);
+          if (data.length > 0) setLastCommentId(data[0].id.toString());
+          showNotification(`Loaded ${data.length} comments`);
+        } catch (e: any) { 
+     showNotification(e.message, "error"); }
   };
 
   const handleCreateComment = async () => {
@@ -208,7 +215,7 @@ export default function ApiConsolePage() {
             <p className="text-ink-soft mt-1">Full CRUD & Admin Intelligence Tools</p>
         </div>
         <div className="bg-white border border-line p-1 rounded-xl flex gap-1">
-            {["posts", "comments", "admin"].map(tab => (
+            {availableTabs.map(tab => (
                 <button 
                     key={tab}
                     onClick={() => setActiveTab(tab)} 
