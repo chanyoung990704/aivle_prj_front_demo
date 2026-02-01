@@ -51,7 +51,7 @@ export default function ApiConsolePage() {
 
   // --- Initial Load ---
   useEffect(() => {
-    // 프로덕션에서는 /dev/ API가 없을 수 있으므로 fetchPosts만 기본 실행
+    loadCategories();
     fetchPosts();
   }, []);
 
@@ -69,11 +69,9 @@ export default function ApiConsolePage() {
     try {
       const res = await postService.getCategories();
       setCategories(res || []);
-      showNotification("Categories loaded");
     } catch (e: any) { 
-      // 404 에러일 경우(프로덕션) 알림 없이 로그에만 기록
-      console.warn("Categories API not available in this environment");
-      addLog({ info: "Categories API (dev-only) is disabled in production." });
+      showNotification(`Categories Error: ${e.message}`, "error");
+      addLog({ error: "Failed to load categories", details: e.message });
     }
   };
 

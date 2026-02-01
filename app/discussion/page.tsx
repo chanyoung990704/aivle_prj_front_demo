@@ -27,27 +27,36 @@ export default function DiscussionPage() {
   
   // States
   const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
   const [comments, setComments] = useState<CommentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Form States
   const [isCreating, setIsCreating] = useState(false);
-  const [postForm, setPostForm] = useState({ title: "", content: "", categoryId: 1 });
+  const [postForm, setPostForm] = useState({ title: "", content: "", categoryId: "" });
   const [commentContent, setCommentContent] = useState("");
   const [replyTo, setReplyTo] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchPosts();
+    loadInitialData();
   }, []);
 
-  const fetchPosts = async () => {
+  const loadInitialData = async () => {
     setLoading(true);
     try {
-      const res = await postService.getPosts({ page: 1, size: 20, sortBy: "createdAt", direction: "DESC" });
-      setPosts(res.content);
+      const [postRes, catRes] = await Promise.all([
+        postService.getPosts({ page: 1, size: 20, sortBy: "createdAt", direction: "DESC" }),
+        postService.getCategories()
+      ]);
+      setPosts(postRes.content);
+      setCategories(catRes || []);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
+  };
+
+  const getCategoryName = (id: number) => {
+    return categories.find(c => c.id === id)?.name || `Category ${id}`;
   };
 
   const handlePostClick = async (post: PostResponse) => {
@@ -61,10 +70,13 @@ export default function DiscussionPage() {
 
   const handleCreatePost = async () => {
     try {
-      await postService.createPost(postForm);
+      await postService.createPost({
+        ...postForm,
+        categoryId: Number(postForm.categoryId)
+      });
       setIsCreating(false);
-      setPostForm({ title: "", content: "", categoryId: 1 });
-      fetchPosts();
+      setPostForm({ title: "", content: "", categoryId: "" });
+      loadInitialData();
     } catch (e: any) { alert(e.message); }
   };
 
@@ -115,10 +127,9 @@ export default function DiscussionPage() {
             >
                 <div className="flex justify-between items-start mb-2">
                     <span className={cn(
-                        "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider",
-                        post.categoryId === 1 ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"
+                        "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider bg-accent/10 text-accent"
                     )}>
-                        Category {post.categoryId}
+                        {getCategoryName(post.categoryId)}
                     </span>
                     <span className="text-[10px] text-ink-muted font-mono">{new Date(post.createdAt).toLocaleDateString()}</span>
                 </div>
@@ -137,12 +148,22 @@ export default function DiscussionPage() {
                     <h3 className="text-xl font-serif font-bold">Create New Discussion</h3>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <input 
-                        placeholder="Thread Title" 
-                        className="w-full p-4 bg-paper rounded-2xl border border-line outline-none focus:border-accent text-lg font-bold"
-                        value={postForm.title}
-                        onChange={e => setPostForm({...postForm, title: e.target.value})}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <select 
+                            className="p-4 bg-paper rounded-2xl border border-line outline-none focus:border-accent text-sm font-bold"
+                            value={postForm.categoryId}
+                            onChange={e => setPostForm({...postForm, categoryId: e.target.value})}
+                        >
+                            <option value="">Select Category</option>
+                            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        <input 
+                            placeholder="Thread Title" 
+                            className="md:col-span-2 w-full p-4 bg-paper rounded-2xl border border-line outline-none focus:border-accent text-lg font-bold"
+                            value={postForm.title}
+                            onChange={e => setPostForm({...postForm, title: e.target.value})}
+                        />
+                    </div>
                     <textarea 
                         placeholder="What's on your mind? Share financial insights or ask questions..." 
                         className="w-full p-4 bg-paper rounded-2xl border border-line outline-none focus:border-accent min-h-[300px] text-sm leading-relaxed"

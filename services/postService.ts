@@ -4,7 +4,7 @@ import { ApiResponse, PageResponse, PostResponse, CommentResponse } from "@/type
 export const postService = {
   // Categories
   getCategories: async (): Promise<any[]> => {
-    const res = await sentinelFetch<any>("/dev/categories");
+    const res = await sentinelFetch<any>("/categories");
     return res.data ?? res;
   },
 
