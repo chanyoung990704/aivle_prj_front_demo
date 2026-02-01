@@ -80,28 +80,16 @@ export default function FileConsolePage() {
   
   const handleView = (fileId: number) => {
     if (!accessToken) return addLog("로그인이 필요합니다.");
-    
-    // 백엔드 엔드포인트로 직접 브라우저 이동 (CORS 영향 없음)
-    // 인증을 위해 토큰을 쿼리 스트링으로 전달하는 방식을 권장합니다.
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=inline`;
     window.open(url, "_blank");
-    addLog(`Viewing file ${fileId} via native browser redirect...`);
+    addLog(`Viewing file ${fileId} in browser...`);
   };
 
-  const handleDownload = (fileId: number, filename: string) => {
+  const handleDownload = (fileId: number) => {
     if (!accessToken) return addLog("로그인이 필요합니다.");
-    
-    // 직접 다운로드 링크 생성
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
-    
-    // 가상 <a> 태그를 통한 다운로드 유도
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    addLog(`Downloading ${filename} via native browser link...`);
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=attachment`;
+    window.location.href = url;
+    addLog(`Downloading file ${fileId}...`);
   };
 
   return (
@@ -230,7 +218,7 @@ export default function FileConsolePage() {
                                         <Eye size={18} />
                                     </button>
                                     <button 
-                                        onClick={() => handleDownload(file.id, file.originalFilename)} 
+                                        onClick={() => handleDownload(file.id)} 
                                         className="p-2 hover:bg-paper rounded-full text-accent transition-colors" 
                                         title="다운로드"
                                     >

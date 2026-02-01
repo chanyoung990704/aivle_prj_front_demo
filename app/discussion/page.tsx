@@ -19,7 +19,8 @@ import {
   Filter,
   Paperclip,
   FileIcon,
-  Download
+  Download,
+  Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { PostResponse, CommentResponse } from "@/types/api";
@@ -107,8 +108,15 @@ export default function DiscussionPage() {
   };
 
   const handleFileView = (fileId: number) => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    if (!accessToken) return alert("Please sign in first.");
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=inline`;
     window.open(url, "_blank");
+  };
+
+  const handleFileDownload = (fileId: number) => {
+    if (!accessToken) return alert("Please sign in first.");
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=attachment`;
+    window.location.href = url;
   };
 
   return (
@@ -220,19 +228,35 @@ export default function DiscussionPage() {
                                 <h4 className="text-xs font-black text-ink-muted uppercase tracking-widest mb-4 flex items-center gap-2">
                                     <Paperclip size={14} /> Attachments ({attachedFiles.length})
                                 </h4>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-3">
                                     {attachedFiles.map(file => (
                                         <div 
                                             key={file.id}
-                                            onClick={() => handleFileView(file.id)}
-                                            className="flex items-center gap-3 px-4 py-2 bg-paper hover:bg-white border border-line rounded-xl cursor-pointer transition-all hover:shadow-sm hover:border-accent group"
+                                            className="flex items-center gap-4 px-4 py-3 bg-paper border border-line rounded-2xl transition-all hover:border-accent group"
                                         >
-                                            <FileIcon size={16} className="text-ink-muted group-hover:text-accent" />
-                                            <div className="flex flex-col">
+                                            <div className="p-2 bg-white rounded-lg shadow-sm text-ink-muted group-hover:text-accent transition-colors">
+                                                <FileIcon size={20} />
+                                            </div>
+                                            <div className="flex flex-col min-w-[100px]">
                                                 <span className="text-[11px] font-bold text-ink truncate max-w-[150px]">{file.originalFilename}</span>
                                                 <span className="text-[9px] text-ink-muted font-mono">{Math.round(file.fileSize / 1024)}KB</span>
                                             </div>
-                                            <Download size={12} className="text-ink-muted ml-2 opacity-0 group-hover:opacity-100" />
+                                            <div className="flex gap-1 ml-2">
+                                                <button 
+                                                    onClick={() => handleFileView(file.id)}
+                                                    className="p-2 hover:bg-white rounded-full text-ink-soft transition-colors"
+                                                    title="View in browser"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleFileDownload(file.id)}
+                                                    className="p-2 hover:bg-white rounded-full text-accent transition-colors"
+                                                    title="Download file"
+                                                >
+                                                    <Download size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
