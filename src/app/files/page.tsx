@@ -236,7 +236,7 @@ export default function FileConsolePage() {
                                         <Eye size={18} />
                                     </button>
                                     <button 
-                                        onClick={() => handleDownload(file.id)} 
+                                        onClick={() => handleDownload(file.id, file.originalFilename)} 
                                         className="p-2 hover:bg-paper rounded-full text-accent transition-colors" 
                                         title="다운로드"
                                     >
