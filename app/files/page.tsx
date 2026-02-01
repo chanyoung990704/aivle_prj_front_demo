@@ -78,49 +78,20 @@ export default function FileConsolePage() {
   // 4. [고도화] fetch 대신 브라우저 네이티브 다운로드 사용 (CORS 원천 차단)
   // 분석 내용에 따라 fetch() + res.blob() 로직을 제거하고 직접 이동 방식을 채택합니다.
   
-  const handleView = async (fileId: number) => {
+  const handleView = (fileId: number) => {
     if (!accessToken) return addLog("로그인이 필요합니다.");
-    addLog(`Fetching file ${fileId} without credentials to bypass S3 CORS...`);
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "omit"
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: Access Denied`);
-        
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-        addLog("File opened successfully.");
-    } catch (err: any) {
-        addLog(`View Error: ${err.message}.`);
-    }
+    // 방법 A: 직접 이동 (CORS 영향 없음)
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    window.open(url, "_blank");
+    addLog(`Redirecting browser to file ${fileId}...`);
   };
 
-  const handleDownload = async (fileId: number, filename: string) => {
+  const handleDownload = (fileId: number) => {
     if (!accessToken) return addLog("로그인이 필요합니다.");
-    addLog(`Downloading ${filename} without credentials...`);
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "omit"
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: Download failed`);
-        
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-        addLog("Download started.");
-    } catch (err: any) {
-        addLog(`Download Error: ${err.message}`);
-    }
+    // 방법 A: 직접 다운로드 (CORS 영향 없음)
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    window.location.href = url;
+    addLog(`Initiating native download for file ${fileId}...`);
   };
 
   return (
@@ -249,7 +220,7 @@ export default function FileConsolePage() {
                                         <Eye size={18} />
                                     </button>
                                     <button 
-                                        onClick={() => handleDownload(file.id, file.originalFilename)} 
+                                        onClick={() => handleDownload(file.id)} 
                                         className="p-2 hover:bg-paper rounded-full text-accent transition-colors" 
                                         title="다운로드"
                                     >

@@ -107,49 +107,19 @@ export default function DiscussionPage() {
     } catch (e: any) { alert(e.message); }
   };
 
-  const handleFileView = async (fileId: number) => {
+  const handleFileView = (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "omit" // 분석 결과 정답: 자격 증명을 완전히 제거하여 S3 CORS 회피
-        });
-        
-        if (!res.ok) throw new Error("파일을 불러오는 데 실패했습니다.");
-        
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch (err: any) {
-        console.error("File View Error:", err);
-        alert("파일을 열 수 없습니다. (CORS 차단 해결 중)");
-    }
+    // 방법 A: fetch를 쓰지 않고 브라우저가 직접 열게 함 (CORS 무시됨)
+    // 인증을 위해 토큰을 쿼리 스트링으로 전달합니다.
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    window.open(url, "_blank");
   };
 
-  const handleFileDownload = async (fileId: number, filename: string) => {
+  const handleFileDownload = (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
-    try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "omit" // 분석 결과 정답: 자격 증명을 완전히 제거
-        });
-        
-        if (!res.ok) throw new Error("다운로드에 실패했습니다.");
-        
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch (err: any) {
-        console.error("File Download Error:", err);
-        alert("다운로드 중 오류가 발생했습니다.");
-    }
+    // 방법 A: 직접 링크 이동을 통해 다운로드 유도 (CORS 무시됨)
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
+    window.location.href = url;
   };
 
   return (
@@ -283,7 +253,7 @@ export default function DiscussionPage() {
                                                     <Eye size={16} />
                                                 </button>
                                                 <button 
-                                                    onClick={() => handleFileDownload(file.id, file.originalFilename)}
+                                                    onClick={() => handleFileDownload(file.id)}
                                                     className="p-2 hover:bg-white rounded-full text-accent transition-colors"
                                                     title="Download file"
                                                 >
