@@ -40,15 +40,17 @@ export async function sentinelFetch<T>(endpoint: string, options: FetchOptions =
         }
     }
 
-        const response = await fetch(url, {
+            const response = await fetch(url, {
 
-            ...options,
+                credentials: "include", // 기본값
 
-            headers,
+                ...options,
 
-            credentials: "include",
+                headers,
 
-        });
+            });
+
+        
 
     
 

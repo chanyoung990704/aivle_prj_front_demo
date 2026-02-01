@@ -83,7 +83,8 @@ export default function FileConsolePage() {
     addLog(`Fetching file ${fileId} with Authorization header...`);
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: "same-origin"
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}: Access Denied`);
         
@@ -102,7 +103,8 @@ export default function FileConsolePage() {
     addLog(`Downloading ${filename} via fetch...`);
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: "same-origin"
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}: Download failed`);
         

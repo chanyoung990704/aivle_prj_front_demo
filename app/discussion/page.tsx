@@ -110,9 +110,9 @@ export default function DiscussionPage() {
   const handleFileView = async (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
     try {
-        // 백엔드 요구사항: Authorization 헤더 필수 전달
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: "same-origin" // S3 CORS 충돌 방지를 위해 자격 증명(쿠키) 제외
         });
         
         if (!res.ok) {
@@ -135,7 +135,8 @@ export default function DiscussionPage() {
     if (!accessToken) return alert("Please sign in first.");
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: "same-origin" // S3 CORS 충돌 방지를 위해 자격 증명(쿠키) 제외
         });
         
         if (!res.ok) throw new Error("다운로드에 실패했습니다.");
