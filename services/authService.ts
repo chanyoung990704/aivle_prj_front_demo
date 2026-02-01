@@ -28,10 +28,10 @@ export const authService = {
   },
 
   verifyEmail: async (token: string) => {
-    return sentinelFetch<string>(`/auth/verify-email?token=${token}`, { method: "GET" });
+    return sentinelFetch<string>(`/api/auth/verify-email?token=${token}`, { method: "GET" });
   },
 
   resendVerification: async (userId: number) => {
-    return sentinelFetch<string>(`/auth/resend-verification?userId=${userId}`, { method: "GET" });
+    return sentinelFetch<string>(`/api/auth/resend-verification?userId=${userId}`, { method: "GET" });
   }
 };

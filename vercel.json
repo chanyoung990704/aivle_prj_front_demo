@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/auth/verify-email",
+      "destination": "/auth/verify-email"
+    }
+  ]
+}
