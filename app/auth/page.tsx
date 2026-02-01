@@ -6,6 +6,7 @@ import { authService } from "@/services/authService";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Script from "next/script";
+import { cn } from "@/lib/utils/cn";
 
 declare global {
   interface Window {
@@ -18,6 +19,12 @@ export default function AuthPage() {
   const { login, logout, accessToken } = useAuth();
   const [log, setLog] = useState<any>("Ready...");
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const showNotification = (message: string, type: "success" | "error" = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
   
   // Turnstile States
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -162,7 +169,17 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Toast Notification */}
+      {notification && (
+        <div className={cn(
+          "fixed top-10 right-10 z-[100] px-6 py-3 rounded-2xl shadow-lg animate-in fade-in slide-in-from-top-4 duration-300",
+          notification.type === "success" ? "bg-accent-tertiary text-white" : "bg-red-500 text-white"
+        )}>
+          {notification.message}
+        </div>
+      )}
+
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       
       <header className="mb-8">
