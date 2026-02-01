@@ -112,22 +112,18 @@ export default function DiscussionPage() {
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "same-origin" // S3 CORS 충돌 방지를 위해 자격 증명(쿠키) 제외
+            credentials: "omit" // 분석 결과 정답: 자격 증명을 완전히 제거하여 S3 CORS 회피
         });
         
-        if (!res.ok) {
-            if (res.status === 401) throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
-            throw new Error("파일을 불러오는 데 실패했습니다.");
-        }
+        if (!res.ok) throw new Error("파일을 불러오는 데 실패했습니다.");
         
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
-        // 메모리 관리를 위해 일정 시간 후 URL 해제
         setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (err: any) {
-        console.error(err);
-        alert(err.message);
+        console.error("File View Error:", err);
+        alert("파일을 열 수 없습니다. (CORS 차단 해결 중)");
     }
   };
 
@@ -136,7 +132,7 @@ export default function DiscussionPage() {
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "same-origin" // S3 CORS 충돌 방지를 위해 자격 증명(쿠키) 제외
+            credentials: "omit" // 분석 결과 정답: 자격 증명을 완전히 제거
         });
         
         if (!res.ok) throw new Error("다운로드에 실패했습니다.");
@@ -151,8 +147,8 @@ export default function DiscussionPage() {
         link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (err: any) {
-        console.error(err);
-        alert(err.message);
+        console.error("File Download Error:", err);
+        alert("다운로드 중 오류가 발생했습니다.");
     }
   };
 

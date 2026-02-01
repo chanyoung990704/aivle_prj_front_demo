@@ -80,11 +80,11 @@ export default function FileConsolePage() {
   
   const handleView = async (fileId: number) => {
     if (!accessToken) return addLog("로그인이 필요합니다.");
-    addLog(`Fetching file ${fileId} with Authorization header...`);
+    addLog(`Fetching file ${fileId} without credentials to bypass S3 CORS...`);
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "same-origin"
+            credentials: "omit"
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}: Access Denied`);
         
@@ -94,17 +94,17 @@ export default function FileConsolePage() {
         setTimeout(() => URL.revokeObjectURL(url), 60000);
         addLog("File opened successfully.");
     } catch (err: any) {
-        addLog(`View Error: ${err.message}. (Note: S3 CORS might still block fetch if not configured)`);
+        addLog(`View Error: ${err.message}.`);
     }
   };
 
   const handleDownload = async (fileId: number, filename: string) => {
     if (!accessToken) return addLog("로그인이 필요합니다.");
-    addLog(`Downloading ${filename} via fetch...`);
+    addLog(`Downloading ${filename} without credentials...`);
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: "same-origin"
+            credentials: "omit"
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}: Download failed`);
         
