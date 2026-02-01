@@ -107,19 +107,52 @@ export default function DiscussionPage() {
     } catch (e: any) { alert(e.message); }
   };
 
-  const handleFileView = (fileId: number) => {
+  const handleFileView = async (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
-    // 분석 결과 정답 A: fetch를 절대 쓰지 않고 브라우저 주소창을 직접 이동시킴
-    // 백엔드에서 ?accessToken=... 파라미터를 지원해야 합니다.
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=inline`;
-    window.open(url, "_blank");
+    try {
+        // 백엔드 요구사항: Authorization 헤더 필수 전달
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        
+        if (!res.ok) {
+            if (res.status === 401) throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
+            throw new Error("파일을 불러오는 데 실패했습니다.");
+        }
+        
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        // 메모리 관리를 위해 일정 시간 후 URL 해제
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err: any) {
+        console.error(err);
+        alert(err.message);
+    }
   };
 
-  const handleFileDownload = (fileId: number) => {
+  const handleFileDownload = async (fileId: number, filename: string) => {
     if (!accessToken) return alert("Please sign in first.");
-    // 다운로드 역시 브라우저 네이티브 기능을 사용하여 CORS 회피
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}&disposition=attachment`;
-    window.location.href = url;
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        
+        if (!res.ok) throw new Error("다운로드에 실패했습니다.");
+        
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err: any) {
+        console.error(err);
+        alert(err.message);
+    }
   };
 
   return (
@@ -253,7 +286,7 @@ export default function DiscussionPage() {
                                                     <Eye size={16} />
                                                 </button>
                                                 <button 
-                                                    onClick={() => handleFileDownload(file.id)}
+                                                    onClick={() => handleFileDownload(file.id, file.originalFilename)}
                                                     className="p-2 hover:bg-white rounded-full text-accent transition-colors"
                                                     title="Download file"
                                                 >

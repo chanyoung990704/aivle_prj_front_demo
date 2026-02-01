@@ -191,6 +191,7 @@ export default function ApiConsolePage() {
     setImportResult(null);
     try {
         const formData = new FormData();
+        // 명세 준수: quarterKey (int), file (파일)
         formData.append("quarterKey", importForm.quarterKey);
         formData.append("file", importForm.file);
         

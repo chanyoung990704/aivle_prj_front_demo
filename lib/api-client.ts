@@ -14,9 +14,13 @@ export async function sentinelFetch<T>(endpoint: string, options: FetchOptions =
     const url = `${API_BASE_URL}${endpoint}`;
 
     const headers: Record<string, string> = {
-        "Content-Type": "application/json",
         ...options.headers,
     };
+
+    // Body가 FormData가 아닐 때만 기본 Content-Type 설정
+    if (!(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+    }
 
     // Client-side only: Access localStorage
     if (typeof window !== "undefined") {
