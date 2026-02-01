@@ -3,19 +3,20 @@ import { ApiResponse, AuthLoginResponse, SignupResponse } from "@/types/api";
 
 export const authService = {
   login: async (payload: any): Promise<AuthLoginResponse> => {
-    const res = await sentinelFetch<ApiResponse<AuthLoginResponse>>("/auth/login", {
+    const res = await sentinelFetch<any>("/auth/login", {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    return res.data;
+    // res.data가 있으면 사용, 없으면 res 자체를 반환 (unwrapped 대응)
+    return res.data ?? res;
   },
 
   signup: async (payload: any): Promise<SignupResponse> => {
-    const res = await sentinelFetch<ApiResponse<SignupResponse>>("/auth/signup", {
+    const res = await sentinelFetch<any>("/auth/signup", {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    return res.data;
+    return res.data ?? res;
   },
 
   logout: async (): Promise<void> => {
