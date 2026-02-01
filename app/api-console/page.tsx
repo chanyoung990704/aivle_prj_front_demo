@@ -51,24 +51,9 @@ export default function ApiConsolePage() {
 
   // --- Initial Load ---
   useEffect(() => {
-    loadCategories();
+    // 프로덕션에서는 /dev/ API가 없을 수 있으므로 fetchPosts만 기본 실행
     fetchPosts();
   }, []);
-
-  // --- Debounced Search for Admin Tab ---
-  useEffect(() => {
-    if (companySearch.trim().length < 2) {
-      setCompanyResults([]);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      try {
-        const res = await adminService.searchCompanies(companySearch);
-        setCompanyResults(res || []);
-      } catch (e) { console.error(e); }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [companySearch]);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
     setNotification({ message, type });
@@ -84,7 +69,12 @@ export default function ApiConsolePage() {
     try {
       const res = await postService.getCategories();
       setCategories(res || []);
-    } catch (e: any) { showNotification(`Categories Error: ${e.message}`, "error"); }
+      showNotification("Categories loaded");
+    } catch (e: any) { 
+      // 404 에러일 경우(프로덕션) 알림 없이 로그에만 기록
+      console.warn("Categories API not available in this environment");
+      addLog({ info: "Categories API (dev-only) is disabled in production." });
+    }
   };
 
   const fetchPosts = async () => {
@@ -240,10 +230,15 @@ export default function ApiConsolePage() {
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <input placeholder="Post ID (Edit/Delete)" value={postForm.id} onChange={e => setPostForm({...postForm, id: e.target.value})} className="p-3 bg-paper rounded-xl border border-line outline-none" />
-                                <select value={postForm.categoryId} onChange={e => setPostForm({...postForm, categoryId: e.target.value})} className="p-3 bg-paper rounded-xl border border-line outline-none">
-                                    <option value="">Select Category</option>
-                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
+                                <div className="flex gap-2">
+                                    <select value={postForm.categoryId} onChange={e => setPostForm({...postForm, categoryId: e.target.value})} className="flex-1 p-3 bg-paper rounded-xl border border-line outline-none">
+                                        <option value="">Select Category</option>
+                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                    <Button variant="outline" size="sm" onClick={loadCategories} title="Load Categories (Dev Only)">
+                                        <RefreshCw size={14}/>
+                                    </Button>
+                                </div>
                             </div>
                             <input placeholder="Post Title" value={postForm.title} onChange={e => setPostForm({...postForm, title: e.target.value})} className="w-full p-3 bg-paper rounded-xl border border-line outline-none" />
                             <textarea placeholder="Post Content" value={postForm.content} onChange={e => setPostForm({...postForm, content: e.target.value})} className="w-full p-3 bg-paper rounded-xl border border-line min-h-[100px] outline-none" />
