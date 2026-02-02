@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { PostResponse, CommentResponse } from "@/types/api";
 import { useAuth } from "@/context/AuthContext";
+import { sentinelFetch } from "@/lib/api-client";
 
 export default function DiscussionPage() {
   const { isAuthenticated, user, accessToken } = useAuth();
@@ -70,9 +71,7 @@ export default function DiscussionPage() {
     try {
       const [commentRes, fileRes] = await Promise.all([
         postService.getComments(post.id),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/${post.id}/files`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
-        }).then(r => r.json())
+        sentinelFetch<any>(`/posts/${post.id}/files`)
       ]);
       setComments(commentRes);
       setAttachedFiles(fileRes.data || fileRes || []);
@@ -107,20 +106,34 @@ export default function DiscussionPage() {
     } catch (e: any) { alert(e.message); }
   };
 
-  const handleFileView = (fileId: number) => {
+  const handleFileView = async (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
-    // 방법 A: fetch를 쓰지 않고 브라우저가 직접 열게 함 (CORS 무시됨)
-    // 인증을 위해 토큰을 쿼리 스트링으로 전달합니다.
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
-    window.open(url, "_blank");
+    try {
+        const res = await sentinelFetch<any>(`/files/${fileId}/url`);
+        const url = res.data?.url || res.url;
+        if (url) {
+            window.open(url, "_blank");
+        } else {
+            throw new Error("URL not found in response");
+        }
+    } catch (e: any) {
+        alert("Failed to get view URL: " + e.message);
+    }
   };
 
-  const handleFileDownload = (fileId: number) => {
+  const handleFileDownload = async (fileId: number) => {
     if (!accessToken) return alert("Please sign in first.");
-    // 방법 A: 직접 링크 이동을 통해 다운로드 유도 (CORS 무시됨)
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/files/${fileId}?accessToken=${accessToken}`;
-    window.location.href = url;
+    try {
+        const res = await sentinelFetch<any>(`/files/${fileId}/url`);
+        const url = res.data?.url || res.url;
+        if (url) {
+            window.location.href = url;
+        }
+    } catch (e: any) {
+        alert("Failed to get download URL: " + e.message);
+    }
   };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-700">

@@ -42,17 +42,13 @@ export default function FileConsolePage() {
 
     addLog("업로드 요청 중...");
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/posts/${postId}/files`, {
+        const data = await sentinelFetch<any>(`/posts/${postId}/files`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${accessToken}` },
             body: formData
         });
-        const data = await res.json();
-        addLog({ status: res.status, body: data });
-        if (res.ok) {
-            setListPostId(postId);
-            fetchFiles(postId);
-        }
+        addLog({ status: "SUCCESS", body: data });
+        setListPostId(postId);
+        fetchFiles(postId);
     } catch (err: any) {
         addLog(`Upload Failed: ${err.message}`);
     }
