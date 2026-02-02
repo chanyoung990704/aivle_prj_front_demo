@@ -9,7 +9,7 @@ export const adminService = {
   },
 
   searchCompanies: async (keyword: string): Promise<CompanySearchResponse[]> => {
-    const res = await sentinelFetch<ApiResponse<CompanySearchResponse[]>>(`/companies/search?keyword=${encodeURIComponent(keyword)}`);
+    const res = await sentinelFetch<ApiResponse<CompanySearchResponse[]>>(`/admin/companies/search?keyword=${encodeURIComponent(keyword)}`);
     return res.data;
   },
 
@@ -39,12 +39,12 @@ export const adminService = {
   },
 
   getGroupedMetrics: async (stockCode: string, from: number, to: number): Promise<ReportMetricGroupedResponse> => {
-    const res = await sentinelFetch<ApiResponse<ReportMetricGroupedResponse>>(`/reports/metrics/grouped?stockCode=${stockCode}&fromQuarterKey=${from}&toQuarterKey=${to}`);
+    const res = await sentinelFetch<ApiResponse<ReportMetricGroupedResponse>>(`/admin/reports/metrics/grouped?stockCode=${stockCode}&fromQuarterKey=${from}&toQuarterKey=${to}`);
     return res.data;
   },
 
   getLatestPredict: async (stockCode: string, quarterKey: number): Promise<any> => {
-    const res = await sentinelFetch<ApiResponse<any>>(`/reports/metrics/predict-latest?stockCode=${stockCode}&quarterKey=${quarterKey}`);
+    const res = await sentinelFetch<ApiResponse<any>>(`/admin/reports/metrics/predict-latest?stockCode=${stockCode}&quarterKey=${quarterKey}`);
     return res.data;
   }
 };
