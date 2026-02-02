@@ -41,20 +41,24 @@ function VerifyEmailContent() {
 
     const handleError = (error: any) => {
         setViewState("error");
+        
+        // 에러 객체에서 메시지 추출 (sentinelFetch에서 던진 Error 또는 직접 받은 객체)
         const code = error?.code || "";
-        const originalMessage = error?.message || "";
+        const originalMessage = error?.message || (typeof error === "string" ? error : "");
         setErrorCode(code);
 
-        if (code === "ALREADY_VERIFIED" || originalMessage.toLowerCase().includes("already")) {
+        const lowerMsg = originalMessage.toLowerCase();
+
+        if (code === "ALREADY_VERIFIED" || lowerMsg.includes("already")) {
             setViewState("success");
             setMessage("이미 인증이 완료되었습니다.");
             setSubMessage("로그인 후 모든 서비스를 이용하실 수 있습니다.");
-        } else if (code === "EXPIRED_TOKEN" || originalMessage.toLowerCase().includes("expired")) {
+        } else if (code === "EXPIRED_TOKEN" || lowerMsg.includes("expired")) {
             setMessage("인증 링크가 만료되었습니다.");
             setSubMessage("다시 로그인을 시도하여 인증 메일을 요청해 주세요.");
-        } else if (originalMessage.includes("Failed to fetch")) {
+        } else if (lowerMsg.includes("failed to fetch")) {
             setMessage("서버 연결에 실패했습니다.");
-            setSubMessage("네트워크 상태를 확인하거나 잠시 후 다시 시도해 주세요. (CORS 또는 API 경로 오류)");
+            setSubMessage("네트워크 상태를 확인하거나 잠시 후 다시 시도해 주세요. (경로: /api/auth/verify-email)");
         } else {
             setMessage("이메일 인증에 실패했습니다.");
             setSubMessage(originalMessage || "유효하지 않은 링크이거나 서버 오류가 발생했습니다.");

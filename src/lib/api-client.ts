@@ -76,25 +76,75 @@ export async function sentinelFetch<T>(endpoint: string, options: FetchOptions =
 
     
 
-        if (!response.ok) {
+                if (!response.ok) {
 
-            // 401 Unauthorized 처리 (액세스 토큰 만료 등)
+    
 
-            if (response.status === 401) {
+                    // 401 Unauthorized 처리 (액세스 토큰 만료 등)
 
-                console.warn("Unauthorized: Token might be expired or invalid");
+    
 
-            }
+                    if (response.status === 401) {
 
-            
+    
 
-            // 상세 에러 메시지 구성
+                        console.warn("Unauthorized: Token might be expired or invalid");
 
-            const errorMessage = data?.message || data?.error || `Error ${response.status}: ${response.statusText}`;
+    
 
-            throw new Error(errorMessage);
+                    }
 
-        }
+    
+
+                    
+
+    
+
+                    // 상세 에러 메시지 구성
+
+    
+
+                    let errorMessage = "Unknown Error";
+
+    
+
+                    if (data?.message) {
+
+    
+
+                        errorMessage = typeof data.message === "object" ? (data.message.message || JSON.stringify(data.message)) : data.message;
+
+    
+
+                    } else if (data?.error) {
+
+    
+
+                        errorMessage = typeof data.error === "object" ? (data.error.message || JSON.stringify(data.error)) : data.error;
+
+    
+
+                    } else {
+
+    
+
+                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+
+    
+
+                    }
+
+    
+
+                    
+
+    
+
+                    throw new Error(errorMessage);
+
+    
+
+                }
 
     
 

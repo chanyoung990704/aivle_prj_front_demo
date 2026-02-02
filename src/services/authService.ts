@@ -37,13 +37,13 @@ export const authService = {
   },
 
   verifyEmail: async (token: string): Promise<ApiResponse<any>> => {
-    return sentinelFetch<ApiResponse<any>>(`/auth/verify-email?token=${token}&redirect=true`, { 
+    return sentinelFetch<ApiResponse<any>>(`/api/auth/verify-email?token=${token}&redirect=true`, { 
         method: "GET"
     });
   },
 
   resendVerification: async (userId: number): Promise<string> => {
-    return sentinelFetch<string>(`/auth/resend-verification?userId=${userId}`, { 
+    return sentinelFetch<string>(`/api/auth/resend-verification?userId=${userId}`, { 
         method: "GET",
         headers: { "Accept": "text/plain" }
     });
