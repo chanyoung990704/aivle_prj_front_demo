@@ -2,11 +2,7 @@
   "rewrites": [
     {
       "source": "/api/auth/verify-email",
-      "destination": "/auth"
-    },
-    {
-      "source": "/verify-email",
-      "destination": "/auth"
+      "destination": "/auth/verify-email"
     }
   ]
 }

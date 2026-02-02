@@ -19,54 +19,32 @@ declare global {
 }
 
 export default function AuthPage() {
+
   const { login, logout, accessToken } = useAuth();
-  const searchParams = useSearchParams();
-  const router = useRouter();
+
   
+
   const [log, setLog] = useState<any>("Ready...");
+
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
+
+
   const showNotification = (message: string, type: "success" | "error" = "success") => {
+
     setNotification({ message, type });
+
     setTimeout(() => setNotification(null), 5000);
+
   };
 
-  // --- Email Verification Logic ---
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-        verifyEmail(token);
-    }
-  }, [searchParams]);
 
-  const verifyEmail = async (token: string) => {
-    setLog("이메일 인증 검증 중...");
-    try {
-        const res = await authService.verifyEmail(token);
-        if (res.success) {
-            setLog("이메일 인증 성공! 이제 로그인이 가능합니다.");
-            showNotification("이메일 인증이 완료되었습니다. 로그인을 진행해 주세요.", "success");
-            setVerificationSent(false);
-            setPendingUserId(null);
-            setActiveTab("login");
-            // URL 파라미터 정리
-            router.replace("/auth");
-        }
-    } catch (err: any) {
-        const msg = err.message || "";
-        if (msg.includes("already") || msg.includes("409")) {
-            setLog("이미 인증된 계정입니다.");
-            showNotification("이미 인증된 계정입니다. 로그인을 진행해 주세요.");
-            setActiveTab("login");
-        } else {
-            setLog(`이메일 인증 실패: ${msg}`);
-            showNotification(`이메일 인증 실패: ${msg}`, "error");
-        }
-    }
-  };
-  
+
   // Turnstile States
+
+
   const [turnstileToken, setTurnstileToken] = useState("");
   const [isTurnstileValid, setIsTurnstileValid] = useState(false);
   const [widgetId, setWidgetId] = useState<string | null>(null);
