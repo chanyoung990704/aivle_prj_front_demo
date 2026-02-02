@@ -18,11 +18,21 @@ function VerifyEmailResultContent() {
   const [subMessage, setSubMessage] = useState("");
 
   useEffect(() => {
+    // 5초 후에도 status가 없으면 에러로 간주
+    const timer = setTimeout(() => {
+        if (!status) {
+            setViewState("error");
+            setMessage("잘못된 접근입니다.");
+            setSubMessage("인증 결과 정보를 확인할 수 없습니다.");
+        }
+    }, 5000);
+
     if (!status) {
       setViewState("loading");
-      return;
+      return () => clearTimeout(timer);
     }
 
+    clearTimeout(timer);
     switch (status) {
       case "success":
         setViewState("success");
