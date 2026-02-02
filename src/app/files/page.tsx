@@ -92,14 +92,8 @@ export default function FileConsolePage() {
     try {
         const url = await getPresignedUrl(fileId);
         addLog(`Download URL Acquired: ${url.slice(0, 50)}...`);
-        
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename; 
-        link.target = "_blank";   
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        // 직접 이동 방식으로 변경 (가장 확실한 다운로드 트리거)
+        window.location.href = url;
     } catch (err: any) { addLog(`Download Error: ${err.message}`); }
   };
 

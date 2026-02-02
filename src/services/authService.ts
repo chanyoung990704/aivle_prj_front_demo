@@ -36,10 +36,9 @@ export const authService = {
     });
   },
 
-  verifyEmail: async (token: string): Promise<string> => {
-    return sentinelFetch<string>(`/api/auth/verify-email?token=${token}`, { 
-        method: "GET",
-        headers: { "Accept": "text/plain" }
+  verifyEmail: async (token: string): Promise<ApiResponse<any>> => {
+    return sentinelFetch<ApiResponse<any>>(`/api/auth/verify-email?token=${token}&redirect=true`, { 
+        method: "GET"
     });
   },
 
