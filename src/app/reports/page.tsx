@@ -20,7 +20,7 @@ export default function ReportsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await sentinelFetch<any>(`/admin/reports/metrics/predict-latest?stockCode=${encodeURIComponent(stockCode)}&quarterKey=${quarterKey}`);
+      const res = await sentinelFetch<any>(`/reports/metrics/predict-latest?stockCode=${encodeURIComponent(stockCode)}&quarterKey=${quarterKey}`);
       
       // 템플릿 로직: payload.success 체크 및 데이터 매핑
       if (res.success && res.data) {

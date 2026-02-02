@@ -68,14 +68,24 @@ export default function DiscussionPage() {
   const handlePostClick = async (post: PostResponse) => {
     setSelectedPost(post);
     setIsCreating(false);
+    
+    // 댓글 로딩
     try {
-      const [commentRes, fileRes] = await Promise.all([
-        postService.getComments(post.id),
-        sentinelFetch<any>(`/posts/${post.id}/files`)
-      ]);
+      const commentRes = await postService.getComments(post.id);
       setComments(commentRes);
+    } catch (e) {
+      console.error("Failed to load comments:", e);
+      setComments([]);
+    }
+
+    // 첨부 파일 로딩 (비관리자의 경우 권한 에러가 발생할 수 있으므로 분리)
+    try {
+      const fileRes = await sentinelFetch<any>(`/posts/${post.id}/files`);
       setAttachedFiles(fileRes.data || fileRes || []);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error("Failed to load files (possibly non-admin):", e);
+      setAttachedFiles([]);
+    }
   };
 
   const handleCreatePost = async () => {
