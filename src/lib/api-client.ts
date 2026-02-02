@@ -22,8 +22,8 @@ export async function sentinelFetch<T>(endpoint: string, options: FetchOptions =
     // FormData인 경우 브라우저가 직접 Content-Type(boundary 포함)을 설정해야 하므로 제거
     if (options.body instanceof FormData) {
         delete headers["Content-Type"];
-    } else if (!headers["Content-Type"]) {
-        // 그 외의 경우에만 기본값으로 JSON 설정
+    } else if (options.body && !headers["Content-Type"]) {
+        // Body가 있는 경우에만 기본값으로 JSON 설정
         headers["Content-Type"] = "application/json";
     }
 
