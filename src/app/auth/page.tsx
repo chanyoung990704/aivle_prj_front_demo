@@ -296,10 +296,6 @@ export default function AuthPage() {
                       <label className="text-xs font-bold text-ink-muted uppercase">Password</label>
                       <input name="password" type="password" placeholder="********" className="w-full p-3 bg-paper rounded-xl border border-paper-border focus:border-accent outline-none text-ink placeholder:text-ink-muted" required />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                      <input name="deviceId" placeholder="Device ID" className="p-3 bg-paper rounded-xl border border-paper-border text-sm text-ink placeholder:text-ink-muted outline-none focus:border-accent" />
-                      <input name="deviceInfo" placeholder="Device Info" className="p-3 bg-paper rounded-xl border border-paper-border text-sm text-ink placeholder:text-ink-muted outline-none focus:border-accent" />
-                  </div>
                   <Button type="submit" className="w-full">
                     Login
                   </Button>
