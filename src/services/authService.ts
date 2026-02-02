@@ -37,8 +37,9 @@ export const authService = {
   },
 
   verifyEmail: async (token: string): Promise<ApiResponse<any>> => {
-    return sentinelFetch<ApiResponse<any>>(`/api/auth/verify-email?token=${token}&redirect=true`, { 
-        method: "GET"
+    return sentinelFetch<ApiResponse<any>>(`/auth/verify-email?token=${token}&redirect=false`, { 
+        method: "GET",
+        skipAuth: true
     });
   },
 

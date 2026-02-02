@@ -4,6 +4,7 @@ import { ENV } from "@/config/env";
 
 interface FetchOptions extends RequestInit {
     headers?: Record<string, string>;
+    skipAuth?: boolean;
 }
 
 const API_BASE_URL = ENV.API_URL;
@@ -28,7 +29,8 @@ export async function sentinelFetch<T>(endpoint: string, options: FetchOptions =
     }
 
     // Client-side only: Access localStorage
-    if (typeof window !== "undefined") {
+    // skipAuth가 true가 아닐 때만 토큰 주입
+    if (!options.skipAuth && typeof window !== "undefined") {
         const tokensString = localStorage.getItem("auth-console.tokens");
         if (tokensString) {
             try {
