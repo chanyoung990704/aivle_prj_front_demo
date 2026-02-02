@@ -113,7 +113,7 @@ export default function Home() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
             {/* 기업 검색 (디바운싱 적용) */}
-            <div className="lg:col-span-2 relative">
+            <div className="lg:col-span-2 relative z-20">
               <label className="text-[10px] font-bold text-ink-muted uppercase mb-1 block">Company Search</label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 text-ink-muted" size={18} />
