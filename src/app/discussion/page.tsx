@@ -121,13 +121,22 @@ export default function DiscussionPage() {
     }
   };
 
-  const handleFileDownload = async (fileId: number) => {
+  const handleFileDownload = async (fileId: number, filename: string) => {
     if (!accessToken) return alert("Please sign in first.");
     try {
         const res = await sentinelFetch<any>(`/files/${fileId}/url`);
         const url = res.data?.url || res.url;
         if (url) {
-            window.location.href = url;
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
         }
     } catch (e: any) {
         alert("Failed to get download URL: " + e.message);
@@ -266,7 +275,7 @@ export default function DiscussionPage() {
                                                     <Eye size={16} />
                                                 </button>
                                                 <button 
-                                                    onClick={() => handleFileDownload(file.id)}
+                                                    onClick={() => handleFileDownload(file.id, file.originalFilename)}
                                                     className="p-2 hover:bg-white rounded-full text-accent transition-colors"
                                                     title="Download file"
                                                 >

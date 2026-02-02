@@ -91,9 +91,27 @@ export default function FileConsolePage() {
   const handleDownload = async (fileId: number, filename: string) => {
     try {
         const url = await getPresignedUrl(fileId);
-        addLog(`Download URL Acquired: ${url.slice(0, 50)}...`);
-        // 직접 이동 방식으로 변경 (가장 확실한 다운로드 트리거)
-        window.location.href = url;
+        addLog(`Download Initiated for: ${filename}`);
+        
+        // 1. S3 Presigned URL로부터 파일을 Blob으로 직접 다운로드
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("파일 다운로드에 실패했습니다.");
+        const blob = await response.blob();
+        
+        // 2. Blob을 가리키는 임시 로컬 URL 생성
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // 3. 가상 <a> 태그를 만들어 다운로드 실행
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename; // 이 속성이 로컬 저장을 강제함
+        document.body.appendChild(link);
+        link.click();
+        
+        // 4. 정리
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+        addLog(`Download Completed: ${filename}`);
     } catch (err: any) { addLog(`Download Error: ${err.message}`); }
   };
 
