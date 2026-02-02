@@ -248,6 +248,8 @@ export default function DiscussionPage() {
                                         <Clock size={12} /> {new Date(selectedPost.createdAt).toLocaleString()}
                                         <span>•</span>
                                         <span>Views: {selectedPost.viewCount}</span>
+                                        <span>•</span>
+                                        <span>Post ID: {selectedPost.id}</span>
                                     </div>
                                 </div>
                             </div>
