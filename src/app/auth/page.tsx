@@ -5,9 +5,10 @@ import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/services/authService";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { useSearchParams, useRouter } from "next/navigation";
 import Script from "next/script";
 import { cn } from "@/lib/utils/cn";
-import { Mail } from "lucide-react";
+import { Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { ENV } from "@/config/env";
 
 declare global {
@@ -19,13 +20,50 @@ declare global {
 
 export default function AuthPage() {
   const { login, logout, accessToken } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [log, setLog] = useState<any>("Ready...");
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    setTimeout(() => setNotification(null), 5000);
+  };
+
+  // --- Email Verification Logic ---
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+        verifyEmail(token);
+    }
+  }, [searchParams]);
+
+  const verifyEmail = async (token: string) => {
+    setLog("이메일 인증 검증 중...");
+    try {
+        const res = await authService.verifyEmail(token);
+        if (res.success) {
+            setLog("이메일 인증 성공! 이제 로그인이 가능합니다.");
+            showNotification("이메일 인증이 완료되었습니다. 로그인을 진행해 주세요.", "success");
+            setVerificationSent(false);
+            setPendingUserId(null);
+            setActiveTab("login");
+            // URL 파라미터 정리
+            router.replace("/auth");
+        }
+    } catch (err: any) {
+        const msg = err.message || "";
+        if (msg.includes("already") || msg.includes("409")) {
+            setLog("이미 인증된 계정입니다.");
+            showNotification("이미 인증된 계정입니다. 로그인을 진행해 주세요.");
+            setActiveTab("login");
+        } else {
+            setLog(`이메일 인증 실패: ${msg}`);
+            showNotification(`이메일 인증 실패: ${msg}`, "error");
+        }
+    }
   };
   
   // Turnstile States
